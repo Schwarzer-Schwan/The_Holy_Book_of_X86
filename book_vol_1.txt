@@ -44,7 +44,7 @@ xxxxxxx      xxxxxxx8:::::8     8:::::8    6::::::6
    x:::::xx:::::x   8::::::88888::::::86::::::66666::::::6
   x:::::x  x:::::x   88:::::::::::::88  66:::::::::::::66
  x:::::x    x:::::x    88:::::::::88      66:::::::::66
-xxxxxxx      xxxxxxx     888888888          666666666        v0.1.2     Delivered to you by Arash TC with the spirit of OpenSecurityTraining.info
+xxxxxxx      xxxxxxx     888888888          666666666        v0.1.5     Delivered to you by Arash TC with the spirit of OpenSecurityTraining.info
 
 
 
@@ -62,8 +62,8 @@ always makes a 5
 Acknowledgement
 
         I owe everything I know about x86 architecture to Xeno Kovah. A man who shared his class videos and slides freely available to everyone which
-is a noble act. In return to his great efforts, I decided to write this tutorial on x86 architecture and assembly and publish it for free so everyone
-who is interested can learn and contribute.
+is a noble act. In return to his great efforts, I decided to write this tutorial on x86 architecture and assembly and publish it for free so whoever
+is interested can learn and contribute.
 
 =====================================================================================================================================================
 
@@ -72,6 +72,11 @@ About the Author[s]:
         Arash TC is the main author and maintainer of this book. He is currently studying IT in Finland. He's got OSCP/OSCE and a long long long way
 ahead to become a pro. He will appreciate readers' comments, criticisms and contributions. His main interest is low level security and kernel
 internals.
+
+        Amir Ali Torkaman is the editor of this volume. He studies English Literature. He's very enthusiastic about Information Security and Privacy.
+That's all I can tell about him now. maybe later you see more info about him here.
+
+        Other contributors are very appreciated as they help me to complete this project and present you a book which hopefully will be flawless.
 
         You can contact the author[s] by visiting http://www.kernelfarm.com/
 
@@ -82,6 +87,9 @@ Introduction:
         This book/guide/tutorial/wiki is about assembly and x86 architecture. It's written by a low level security dude for low level security dudes.
         If you wanna learn Assembly and its structure, reversing basics, Segmentation, Paging, etc. keep on reading. I highly recommend you check
 opensecuritytraining.info website and watch Intro to x86 videos as you read this book.
+
+        You need Intel Developer's Manual as a quick reference throughout this book. You can download it from the link below:
+        https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf
 
 =====================================================================================================================================================
 
@@ -1333,6 +1341,7 @@ are categorized into 2 groups: Conditional and Unconditional.
 
 Unconditional Jump:
 
+16.
     _ __  __ ___
  _ | |  \/  | _ \
 | || | |\/| |  _/
@@ -1376,5 +1385,611 @@ inside it. You're not reading Intel's manual anyway. So here we go:
 | _|| _|| |__ / _ \ (_ \__ \
 |___|_| |____/_/ \_\___|___/
 
-        EFLAGS is a register that has a lot of flags! No, shit! (:D). But that's really what it's about. Flags that control certain parts of the
-program and its connection with the OS.
+        EFLAGS is a register that has a lot of flags! No, shit! (:D). But it is really what it's about. Flags that control certain parts of the
+program and its connection with the OS. These flags are the bits of the EFLAGS register which can be set to 1 or 0. These values are mostly changed
+after a comparison or after executing some instruction that has a direct effect on the state of these bits (flags). Here's the structure of EFLAGS
+register containing its different flags:
+
++=========+==============+===============================+==========+
+|   Bit   | Abbreviation |          Description          | Category |
++=========+==============+===============================+==========+
+|                         FLAGS (16-bit)                            |
++-------------------------------------------------------------------+
+| 0       | CF           | Carry Flag                    | Status   |
++---------+--------------+-------------------------------+----------+
+| 1       |              | Reserved, Always 1 in EFLAGS  |          |
++---------+--------------+-------------------------------+----------+
+| 2       | PF           | Parity Flag                   | Status   |
++---------+--------------+-------------------------------+----------+
+| 3       |              | Reserved                      |          |
++---------+--------------+-------------------------------+----------+
+| 4       | AF           | Adjust Flag                   | Status   |
++---------+--------------+-------------------------------+----------+
+| 5       |              | Reserved                      |          |
++---------+--------------+-------------------------------+----------+
+| 6       | ZF           | Zero Flag                     | Status   |
++---------+--------------+-------------------------------+----------+
+| 7       | SF           | Sign Flag                     | Status   |
++---------+--------------+-------------------------------+----------+
+| 8       | TF           | Trap Flag                     | Control  |
++---------+--------------+-------------------------------+----------+
+| 9       | IF           | Interrupt Enable Flag         | Control  |
++---------+--------------+-------------------------------+----------+
+| 10      | DF           | Direction Flag                | Control  |
++---------+--------------+-------------------------------+----------+
+| 11      | OF           | Overflow Flag                 | Status   |
++---------+--------------+-------------------------------+----------+
+| 12-13   | IOPL         | I/O Privilege Level           | System   |
++---------+--------------+-------------------------------+----------+
+| 14      | NT           | Nested Task Flag              | System   |
++---------+--------------+-------------------------------+----------+
+| 15      |              | Reserved (Always 1 on x86)    |          |
++---------+--------------+-------------------------------+----------+
+|                        EFLAGS (32-bit)                            |
++-------------------------------------------------------------------+
+| 16      | RF           | Resume Flag                   | System   |
++---------+--------------+-------------------------------+----------+
+| 17      | VM           | Virtual x86 Mode Flag         | System   |
++---------+--------------+-------------------------------+----------+
+| 18      | AC           | Alignment Check               | System   |
++---------+--------------+-------------------------------+----------+
+| 19      | VIF          | Virtual Interrupt Flag        | System   |
++---------+--------------+-------------------------------+----------+
+| 20      | VIP          | Virtual Interrupt Pending     | System   |
++---------+--------------+-------------------------------+----------+
+| 21      | ID           | Able to use CPUID instruction | System   |
++---------+--------------+-------------------------------+----------+
+| 22 - 31 |              | Reserved                      |          |
++---------+--------------+-------------------------------+----------+
+|                        RFLAGS (64-bit)                            |
++-------------------------------------------------------------------+
+| 32 - 63 |              | Reserved                      |          |
++---------+--------------+-------------------------------+----------+
+
+        Well that's a long list and I don't expect you to memorized them. For now, we just have to know about these flags:
+
+        Zero Flag (ZF): This flag will be set to 1 if comparing 2 things is results in equality.
+        Sign Flag (SF): As its name represents, it determines if you're dealing with a signed integer or an unsigned integer.
+        Carry Flag (CF): Remember when you were in elementary school and the teacher said if we want to add 9 to 6:
+
+           Carry (1)    9
+                  |   + 6
+                  |   -----
+                  |__  1  5
+
+        Ehem. That's the best way I can describe it. You will see it more in action later. What were we talking about? Aha! Conditional jumps:
+
+
+17.
+
+  ___ __  __ ___
+ / __|  \/  | _ \
+| (__| |\/| |  _/
+ \___|_|  |_|_|
+
+
+        Before learning a conditional jump, you need to know how condition is determined, right? So CMP (Compare) instruction determines that
+condition. It compares the source and destination value with each other and set the appropriate bits (flags) accordingly in EFLAGS register. The CF,
+OF, SF, ZF, AF, and PF flags are set according to the result.
+
++--------------------------------+
+| Jcc - Jump if Condition is Met |
++--------------------------------+
+
+        Conditional jumps have too many different instructions, each designed for a specific purpose. It's not really convenient to mention all of
+them here since it will not do you any good. We just mention a couple of them here with examples. If you are interested to read more about them
+(highly recommended), check the Intel's manual (Now you're old enough to check the manual yourself :p).
+
+18.
+     _ _  _ ___
+  _ | | \| | __|
+ | || | .` | _|
+  \__/|_|\_|___|
+
+
+        Jump if Not Equal or (JNE) checks if the Zero-Flag (ZF) is set or not. As the result of a CMP instruction sets this flag, it will take jump if
+ZF is not set (0) and will pass to the next instruction after the JNE instruction if ZF is set (1). Here's an example:
+
+    (1)    xor ecx,ecx
+    (2)    mov eax,0x10
+    (3)    inc ecx
+    (4)    cmp eax,ecx
+    (5)    jne (3)
+    (6)    ....
+
+        This piece of assembly represents a very simple and neat loop that loops 16 times. The first instruction does an "exclusive OR" on ECX. If you
+remember correctly, this will zero out ECX. On second line we put decimal value of 16 (hex 0x10) in EAX. After incrementing ECX by 1, we compare ECX
+with EAX. Comparing the values 16 and 1 is done by subtracting 1 from 16. Obviously ZF will not be set to 1 and the jump will be taken. After taking
+the jump, EIP will point to line (3). This will increment ECX again by 1. After looping 16 times, ECX will be 0x10 and the CMP instruction
+(subtracting 16 - 16) will result in 0 and ZF will be set to 1. This time the condition for JNE is not met and jump will not be take and EIP will
+point to line (6).
+
+        It's a good time to take a look at our 3rd example in order to better understand conditional jumps. This time we won't show you the source
+code first and we dive into assembly. This will be our first reversing experience. This time, our assembly is 64-bit.
+
+(gdb) disassemble main
+Dump of assembler code for function main:
+   0x0000000100000f70 <+0>:	  push   rbp
+   0x0000000100000f71 <+1>:	  mov    rbp,rsp
+   0x0000000100000f74 <+4>:	  mov    DWORD PTR [rbp-0x4],0x0
+   0x0000000100000f7b <+11>:	mov    DWORD PTR [rbp-0x8],0x5
+   0x0000000100000f82 <+18>:	mov    DWORD PTR [rbp-0xc],0x6
+   0x0000000100000f89 <+25>:	mov    eax,DWORD PTR [rbp-0x8]
+   0x0000000100000f8c <+28>:	cmp    eax,DWORD PTR [rbp-0xc]
+   0x0000000100000f8f <+31>:	jle    0x100000fa1 <main+49>
+   0x0000000100000f95 <+37>:	mov    DWORD PTR [rbp-0x4],0xffffffff
+   0x0000000100000f9c <+44>:	jmp    0x100000fa8 <main+56>
+   0x0000000100000fa1 <+49>:	mov    DWORD PTR [rbp-0x4],0x0
+   0x0000000100000fa8 <+56>:	mov    eax,DWORD PTR [rbp-0x4]
+   0x0000000100000fab <+59>:	pop    rbp
+   0x0000000100000fac <+60>:	ret
+End of assembler dump.
+
+        Okie Dockie! First two lines (line <+0> and <+1> in main) are pretty familiar; function prologue. On line <+4> through <+18> after setting up
+the new stack frame, we save the value zero at RBP - 4, value 5 at RBP - 8 and value 6 at RBP - 12. This pretty much looks like the process of
+initializing local variables. We can be sure value 5 and 6 are local variables of integer type but as we saw in our previous examples, 0 can be an
+uninitialized variable or something that only exists in the assembly not the source. By now we can guess that our source code might look like this:
+
+main()
+{
+int a = 5;
+int b = 6;
+}
+
+        On line <+25> we see one of these local variables is moved to EAX followed by a compare instruction that checks these 2 local variables
+together. On line <+31> we see a new instruction (Here's a good time to check the manual ;p). JLE (Jump if Less than or Equal to) will check the
+value at RBP - 12 which is number 6 with the value in EAX which is 5. This compare instruction will change the affected flags as follows:
+
+        ZF = 0
+        SF = 1
+        OF = 0
+        CF = 1
+
+        JLE instruction will take the jump if and only if ZF = 1 or SF not be equal to OF (Overflow Flag). As we can see, EFLAGS register shows that
+this condition is met, so the jump is taken. After taking the jump we land on line <+49> which will put zero in EAX, pop the previous stack frame
+back into RBP and return. We now noticed that RBP - 4 (the suspicious value of 0) was indeed something in assembly only and not in the source. It was
+only used for our return value. Our best guess for the source code is:
+
+int main() //int is used because the return values are integers
+{
+  int a = 5;
+  int b = 6;
+  if(a<b)
+    return 0;
+  else
+    return -1; //if JLE does not meet its condition, the jump will not be take and the value 0xffffffff will be return which is -1
+}
+
+        That's pretty much the source code that was used but do you want to see the real source code?
+
+int main()
+{
+  int a = 5;
+  int b = 6;
+  if(a>b)
+    return -1;
+  else
+    return 0;
+}
+
+        The noticeable difference is that in assembly, the condition is check differently compared to the way it's checked in high level source code.
+This can be due to several reason like compiler conventions, optimization, OS, etc. First "else" condition is check which is a less than or equal to
+b (opposite of a greater than b).
+
+        By far we know 17 different instructions. 90% of any given program is filled with these instructions that we learned thus far. But we keep
+pushing forward anyway. Next instruction.
+
+19.
+  ___ __  __ _   _ _
+ |_ _|  \/  | | | | |
+  | || |\/| | |_| | |__
+ |___|_|  |_|\___/|____|
+
+        IMUL is a Signed Multiply instruction. This instruction is used when we want to multiply by any number that is not a power of 2. IMUL has
+three different ways to work with (Actually it's not just 3 different ways. It's 13 but we only mention 3, maybe 4. You can take a look at all 13
+different ways in Intel's Manual, volume 2A - Page 3-443. BTW it's Page 3-443 not page 3 to 443 :D)
+
+        (1) -->  imul r/m32       --------->  EDX:EAX = EAX x r/m32  -------->  Final result 64 bits
+                 imul r/m64       --------->  RDX:EAX = RAX x r/m64  -------->  Final result 128 bits
+
+        In this way, it's gonna take the R/M32 value and multiply it by whatever is inside EAX and put the result back in to EDX:EAX in a way that
+        EDX will contain the higher 32 bits and EAX will contain the lower 32 bits. For 64-bit version, you switch EDX and EAX with RDX and RAX
+        respectively.
+
+       (2) -->  imul reg32, r/m32   -------> reg32 = reg32 x r/m32
+                imul reg64, r/m64   -------> reg64 = reg64 x r/m64
+
+                You really want me to explain this one? Come on! Christ!!!
+
+       (3) -->  imul reg32, r/m32, immediate   ----->  reg32 = r/m32 x immediate
+                imul reg64, r/m64, immediate   ----->  reg64 = r/m64 x immediate
+
+                Yeah, Yeah! I know! It's the first time you see an instruction with 3 operands. Well, you better look in the manual every once in a
+                while. You may find interesting thing in there :p
+
+20.
+
+  ___ _____   __
+ |   \_ _\ \ / /
+ | |) | | \ V /
+ |___/___| \_/
+
+       DIV is Unsigned Division. It has 2 forms in general.
+
+       (1) div r/m8
+
+               This will divide AX by the given r/m8 and will store the quotient in AL and the remainder in AH. These are small portions of EAX if
+               remember, but I draw the table for you here again:
+
+                +-----------------+
+                |       EAX       |
+                +-----------------+
+                |EXTENDED|   AX   |  you take whatever inside AX, divide it by the given r/m8 value.
+                +-----------------+
+                |        |AH  | AL|  you store the result back to AX; the quotient in AL and the remainder in AH.
+                +--------+--------+
+                31       16   8   0
+
+
+       (2) div r/m16
+           div r/m32
+           div r/m64
+
+                For r/m16 form, it takes the value DX:AX and divides it by the given r/m16 value. Then it stores the quotient in AX and the remainder
+                in DX. If you use your imagination now, for r/m32 and r/m64 it a matter of switch DX and AX with EDX, EAX, RDX and RAX respectively.
+
+        Time for our next example. This time we're gonna see something a little bit different. And again we're only gonna see the assembly and not the
+source code. Don't panic. Alright, here we go:
+
+(gdb) set disassembly-flavor intel
+(gdb) disassemble main
+Dump of assembler code for function main:
+   0x0804840b <+0>:	lea    ecx,[esp+0x4]              }
+   0x0804840f <+4>:	and    esp,0xfffffff0             } -----> what the hell are these???
+   0x08048412 <+7>:	push   DWORD PTR [ecx-0x4]        }
+   0x08048415 <+10>:	push   ebp
+   0x08048416 <+11>:	mov    ebp,esp
+   0x08048418 <+13>:	push   ecx
+   0x08048419 <+14>:	sub    esp,0x14
+   0x0804841c <+17>:	mov    DWORD PTR [ebp-0x14],0x5
+   0x08048423 <+24>:	mov    DWORD PTR [ebp-0x10],0x6
+   0x0804842a <+31>:	mov    eax,DWORD PTR [ebp-0x14]
+   0x0804842d <+34>:	imul   eax,DWORD PTR [ebp-0x10]
+   0x08048431 <+38>:	mov    DWORD PTR [ebp-0xc],eax
+   0x08048434 <+41>:	sub    esp,0x8
+   0x08048437 <+44>:	push   DWORD PTR [ebp-0xc]
+   0x0804843a <+47>:	push   0x80484e0
+   0x0804843f <+52>:	call   0x80482e0 <printf@plt>
+   0x08048444 <+57>:	add    esp,0x10
+   0x08048447 <+60>:	mov    eax,0x0
+   0x0804844c <+65>:	mov    ecx,DWORD PTR [ebp-0x4]
+   0x0804844f <+68>:	leave
+   0x08048450 <+69>:	lea    esp,[ecx-0x4]
+   0x08048453 <+72>:	ret
+End of assembler dump.
+(gdb)
+
+        Before we begin reversing, we need to understand the first 3 lines and their purpose. Now we start by asking ourselves, what is ESP + 0x4 ?
+Why is it copied into ECX? The first instruction saves an special address which is an offset to ESP and pastes it into ECX. Now if you take a look at
+the bottom of this chunk of assembly, on line <+69>, this address is recovered back into ESP. So we understand the first line now: it's saving the ESP
+value before doing anything. But hey! Didn't we do that by the famous "Function Prologue" of "Push EBP" and "MOV EBP,ESP"? Yes buy take a look at the
+next instruction on line <+4>. Let's break it down:
+
+        and esp,0xfffffff0
+
+        if we assume ESP is at address 0x7fffff56, this instruction will do a bitwise "AND" operation to zero out that least significant byte in ESP.
+
+        and 7 f f f f f 5 6
+            f f f f f f f 0
+            ---------------
+            7 f f f f f 5 0  ---> New ESP
+
+        Buy why? Because of optimization and performance. In order to have a better performance on memory calculations, OS optimizes the stack
+addresses to start at a 16-byte boundary. This speeds up calculations and addressing which will result in a better performance. I think you pretty
+much got the idea. On line <+7>, the real ESP which is at a 0x4-byte offset to ECX, will be pushed onto the stack. If you take a look at 2-3 line
+after this you see ECX is pushed onto the stack. So why pushing [ECX-0x4]? This is getting complicated right? No! The answer requires a keen memory.
+[ECX-0x4] is [ESP + 0x4 - 0x4] right? So it's [ESP] which holds the value of the very next instruction after calling main(). It's the return address!
+
+        Line <+10> and <+11> is what we new before about a function prologue. Now add those 3 new lines above it to your definition on function
+prologue. After that, ECX is pushed onto the stack save its value if later instructions and function calls are gonna use ECX register. Maybe a stack
+representation would give you the full picture. So after executing line <+14> which reserves some space for main's local variables, stack should look
+like this:
+
+                        +----------+
+                   ECX  | X X X X  |
+                        +----------+
+(before alignment) ESP  | SAVED EIP| --> Assuming ESP was at 0x7fffff56
+                        +----------+
+                        | Skipped  |
+                        | 6 bytes  |
+                        +----------+  -> ESP will be at 0x7fffff50 after the "and" instruction
+ (after alignment) ESP  | SAVED EIP|
+                        +----------+ --> and by pushing [ECX - 0x4] the return address will show up here --> 0x7fffff4c
+                        | SAVED EBP|
+            EBP --->    +----------+ --> 0x7fffff48
+                        | SAVED ECX| --> This must be saved in order to be able to get back to original unaligned ESP
+                        +----------+                                        and getting back to whoever called main().
+                        |          |
+                        +----------+
+                        |          |
+                        +----------+
+                        |          |
+                        +----------+
+                        |          |
+                        +----------+
+          Final ESP     |          | --> After "SUB ESP,0x14"  which is reserving space for main's local variables, ESP will be at 0x7fffff30
+                        +----------+
+
+
+                        EPB = 0x7fffff48
+                        ESP = 0x7fffff30
+**Note: There is an alternative good answer in this link:
+http://stackoverflow.com/questions/1147623/trying-to-understand-the-main-disassembly-first-instructions
+
+       Moving on to the next instructions, on line <+17> and <+24> we see two numbers are placed on onto the stack. Number 5 will be placed at EBP - 0x14
+and number 6 will be placed on EBP - 0x10. Thus far, we have 2 should have 2 local variables:
+
+        int a = 5;
+        int b = 6;
+
+**Note2: We can now recognize the sequence of instructions used to define local variables.
+
+       Next, on line <+31> we see on of our local variables is copied into EAX followed by an IMUL instruction. If we check closely, we can see,
+variable a or number 5, is copied into EAX and then, on line <+34> we have:
+
+        imul eax, DWORD PTR [EBP-0x10]
+
+        which means multiply whatever is inside [EBP-0x10] by EAX and put the result back in EAX. For this example, it multiplies 5 by 6 and EAX will
+hold the value 30. Later this value is placed onto the stack at [EBP - 0xC]. Our Stack will be like this:
+
+                        +----------+
+                   ECX  | X X X X  |
+                        +----------+
+(before alignment) ESP  | SAVED EIP| --> Assuming ESP was at 0x7fffff56
+                        +----------+
+                        | Skipped  |
+                        +----------+
+                        +----------+  -> ESP will be at 0x7fffff50 after the "and" instruction
+ (after alignment) ESP  | SAVED EIP|
+                        +----------+ --> and by pushing [ECX - 0x4] the return address will show up here --> 0x7fffff4c
+              EBP -->   | SAVED EBP|
+                        +----------+ --> 0x7fffff48
+              EBP - 0x4 | SAVED ECX| --> This must be saved in order to be able to get back to original unaligned ESP
+                        +----------+                                        and getting back to whoever called main().
+              EBP - 0x8 |          |
+                        +----------+
+              EBP - 0xC |   0x1E   |
+                        +----------+
+             EBP - 0x10 |   0x6    |
+                        +----------+
+             EBP - 0x14 |   0x5    |
+                        +----------+
+          Final ESP     |          | --> After "SUB ESP,0x14"  which is reserving space for main's local variables, ESP will be at 0x7fffff30
+                        +----------+
+
+                        EBP = 0x7fffff48
+                        ESP = 0x7fffff30
+                        EAX = 0x1E
+
+        Moving on to the next instruction, we see ESP is again subtracted by 0x8. Reserving space again? Hmm... Although we have empty spaces in our
+stack but it is reserving more space. Let's move on and see what happens next. We see the result of the multiply, is now push onto the stack. The next
+two instructions after it, is pushing the address of the very next instruction after the call and then calling printf(). Now we can be sure it is
+going to print the value 30 on the screen.
+
+        0x08048437 <+44>:	push   DWORD PTR [ebp-0xc]    ----> Pushing the parameter needed for the function printf() onto the stack.
+        0x0804843a <+47>:	push   0x80484e0              ----> Saving the return Address in order to get back to main() after executing printf().
+        0x0804843f <+52>:	call   0x80482e0 <printf@plt> ----> Calling printf();
+
+                        +----------+
+                   ECX  | X X X X  |
+                        +----------+
+(before alignment) ESP  | SAVED EIP| --> Assuming ESP was at 0x7fffff56
+                        +----------+
+                        | Skipped  |
+                        +----------+
+                        +----------+  -> ESP will be at 0x7fffff50 after the "and" instruction
+ (after alignment) ESP  | SAVED EIP|
+                        +----------+ --> and by pushing [ECX - 0x4] the return address will show up here --> 0x7fffff4c
+              EBP -->   | SAVED EBP|
+                        +----------+ --> 0x7fffff48
+              EBP - 0x4 | SAVED ECX| --> This must be saved in order to be able to get back to original unaligned ESP
+                        +----------+                                        and getting back to whoever called main().
+              EBP - 0x8 |          |
+                        +----------+
+              EBP - 0xC |   0x1E   |
+                        +----------+
+             EBP - 0x10 |   0x6    |
+                        +----------+
+             EBP - 0x14 |   0x5    |
+                        +----------+
+                        |          |
+         Previous ESP   +----------+  ---> This address (0x7fffff30) will be used later. :)
+                        |  8 bytes |
+                        + reserved +
+                        |sub esp,8 |
+                        +----------+  ---> 0x7fffff28
+                        |  0xIE    |  ---> This is number 30 which is a parameter passed to the function printf().
+                        +----------+
+              New ESP   | SAVED EIP|  ---> Return address to get back to main() when printf() is done.
+                        +----------+  ---> 0x7fffff20
+
+        Rest of the instructions are closing scene. On line <+57>, we wipe off a part of the stack by adding 16 bytes to it. This will recover ESP to
+point to "Previous ESP". Then the value 0 is put inside EAX.
+
+                        0x08048444 <+57>:	add    esp,0x10
+                        0x08048447 <+60>:	mov    eax,0x0
+
+        Now on line <+65> the saved value of ECX will be recovered into ECX again. And then on line <+69> we use [ECX - 0x4] (ECX was a 4-byte offset
+to ESP, remember?) to restore the original unaligned ESP. That's it!
+
+                        0x0804844c <+65>:	mov    ecx,DWORD PTR [ebp-0x4]
+                        0x0804844f <+68>:	leave
+                        0x08048450 <+69>:	lea    esp,[ecx-0x4]
+                        0x08048453 <+72>:	ret
+
+        I noticed that I haven't told you about "leave" instruction. Leave is nothing but :
+
+        mov esp,ebp
+        pop ebp
+
+        which the same as what we saw in previous examples when a function wants to restore the caller's stack frame and return. SO anyways, we
+reversed example4 completely and here's the result we got for the high-level source code:
+
+#include <stdio.h>   ---> because we used printf()
+int main()    ----> main() must be an integer because the final return value which we saw in EAX on line <+60> is an integer.
+{
+int a = 5;
+int b = 6;
+int c = a*b;       ---> because of the IMUL instruction on our 2 local variables above.
+printf("%d", c);   ---> because the result of the multiplication was printed to screen.
+return 0;          ---> the final return value in EAX is 0.
+}
+------------------------------------------------------------------------------------------------
+
+        While examining a program inside a debugger, often time we see 2 instructions that do a very simple task. These 2 instructions are introduced
+here as one:
+
+
+21.
+      ___ _  _  ___
+     |_ _| \| |/ __|
+      | || .` | (__
+     |___|_|\_|\___|
+
+       ___  ___ ___
+      |   \| __/ __|
+      | |) | _| (__
+      |___/|___\___|
+
+
+        Increment/Decrement instruction accepts only 1 r/m32 value and increments/decrements it by 1. That doesn't anymore explanation :D
+
+        How about writing our "Hello World!" program in ASM now, hmm? Perhaps this is the only time you see "Hello World" at almost the end of a book
+when learning a new language. Well, there is a little twist here, I try to explain as clear as possible. First we need to know the architecture of a
+program in Assembly. There are 3 different section (Well, the most important and general ones) that forms up an assembly program:
+
+          .TEXT : .TEXT section is where all the code goes. In other words, it's the section that holds the main execution flow of the program. You
+          may here folks refer to this section as "CODE" section.
+
+          .DATA : In this section, all the constants are defined. You can not change the values here throughout the execution.
+
+          .BSS : ...and all the variables reside in this section.
+
+       Alright, open up a new file and name it whatever you want and save it with ".asm" extension (I'm doing it on Ubuntu). Let's define 2
+sections that we need for our "Hello World" program in the file "hello.asm", .TEXT and .DATA (Since we're only gonna use constants!):
+
+hello.asm
+------------------------------------------------------------------------------------------------------------------------------------------------------
+SECTION .TEXT
+
+
+
+
+
+SECTION .DATA
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        This is the syntax that should be used to define sections in ASM. In almost every programming language, the starting point of the program is
+the "main()" function. In Assembly, the starting point is "_start" (Underline start). Since this function must be globally recognized throughout whole
+program, we declare it as GLOBAL:
+
+hello.asm
+------------------------------------------------------------------------------------------------------------------------------------------------------
+SECTION .TEXT
+        global _start
+_start:
+
+
+
+SECTION .DATA
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        Now we can start writing our "Hello World" Program. Keep that in mind that every function that we have in our program, must be declared in
+.TEXT section before doing anything (right after SECTION .TEXT). This should be done in order for the program to be linked correctly to its binary
+executable.
+        What should we do before printing to screen? Defining the string we want to print. We do that in .DATA section. The syntax for it is:
+
+        name_of_const    db    value    ;This is a comment! Ehem, db is "Define Byte" and what it does is that it places the value in memory and
+                                        ;labels it so we can access it by a name.
+
+        Later, we need to specify the length of the constant (or string, in this case) that we defined earlier. This mat be a little bit tricky:
+
+        name_of_const    equ  $ - name_of_const_in_question
+
+        ...tha f**k? Yeah, I know :D. "equ" mean "=". $ means "here"! It literally means the address of "here" exactly. This is mostly used right
+after declaring a variable or constant. So if we say:
+
+        something    db     "What?"
+        length       equ     $ - something
+
+        it means:
+                Declare the string "what?" and save the address of its beginning to the constant "something". Now something holds the address of the
+                start of that string we declared.
+
+        So here's our hello.asm file now:
+
+hello.asm
+------------------------------------------------------------------------------------------------------------------------------------------------------
+SECTION .TEXT
+        global _start
+_start:
+
+
+
+SECTION .DATA:
+message        db        "Hello Wolrd!",0xa     ;0xa is "new-line" character. Check ASCII to HEX table if you want ;)
+length        equ         $ - message
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        Now that we have our constants set up, we still can't finish the "Hello World" program and move on with our lives. We still miss something
+very important in our knowledge base. That important something is "System Calls".
+
+  _____   _____    ___   _   _    _
+ / __\ \ / / __|  / __| /_\ | |  | |
+ \__ \\ V /\__ \ | (__ / _ \| |__| |__
+ |___/ |_| |___/  \___/_/ \_\____|____|
+
+        A Sys Call or a System Call is a term used to define the process of handing execution to the kernel. To be honest, in order to explain a
+sys call correctly, you also need to know something called "Ring Level". But I don't wanna throw you in the rabbit hole. So I simplify it for now and
+later in the 2nd volume, we're gonna live inside the rabbit hole, like it or not. We have 4 rings in computer architecture starting from ring 0 to
+ring 3. Ring 0 has the most privilege and ring 3 has the least. Here I break it down for you:
+
+        Ring 0 :  Kernel or the OS, (Kernel Space)
+        Ring 1 & 2:  Nothing Special, it's rarely used, probably some OS utilities
+        Ring 3:  Programs, Users (User Space)
+
+       A process in ring 3 can't do things in ring 0. It simply doesn't have the privilege. On the other hand, a process in ring 0 can literally do
+whatever it wants. So imagine a ring 3 process wants to execute something but that something requires ring 0 privilege. What should be done here? The
+process should call some process in ring 0 and hand the execution to ring 0. If the process (or the code) is legitimate and ok, ring 0 will accept the
+request, execute the requested code and returns the execution flow to the caller with the appropriate result. This is called a Sys Call.
+(in a nutshell).
+
+        Sys Calls on Linux are done by "int 0x80"(32-bit) or "syscall"(64-bit only) instruction. Don't mistake it with integer, it's an interrupt.
+There is a reason why it's called an interrupt. You'll see the magic in volume 2 when we read about Interrupt Handling and IRQL and interrupts in
+general. On Windows, Sys Calls (or interrupts) are done differently. You'll learn more about it in volume 2 when we talk about windows internals. For
+now, we focus on Linux. On Linux, after calling the kernel by  "int 0x80" or "syscall" instruction, the operator will pick up the phone (this is
+serious :D) and tells you:
+
+        press 0	if you need read	sys_read	fs/read_write.c
+        press 1 if you need	write	sys_write	fs/read_write.c
+        press 2	if you need open	sys_open	fs/open.c
+        press 3 if you need	close	sys_close	fs/open.c
+        press 4 if you need	stat	sys_newstat	fs/stat.c
+        press 5 if you need	fstat	sys_newfstat	fs/stat.c
+        press 6 if you need	lstat	sys_newlstat	fs/stat.c
+        press 7 if you need	poll	sys_poll	fs/select.c
+        press 8 if you need	lseek	sys_lseek	fs/read_write.c
+        .
+        .
+        .
+
+        And it goes on and on and on until it finishes all 313 options that they offer. (Please don't make a conspiracy theory out of it). Now we all
+know nobody is down with listening to all 313 options and then press the button, so we must pick our desired option in advance. For that, we have a
+structure and based on that, we prepare everything that we need in advance and then make the call. The list above is for 64-bit version. Sys call
+index numbers and order are different in 64-bit mode and the option are also expanded to 313. Before they were only 190. IT is also very important to
+know that "int 0x80" and "syscall" handle the calls differently and each of them have their own uses and conventions. and guess what, they are not the
+only instructions for this purpose. 'int 0x80' is mostly referred to as "the legacy" way of calling the kernel. So what we're gonna do is to
+write the hello.asm program in both versions so you would have a clear understanding how they work and recognize their differences. Keep that in mind
+that the version of the Linux kernel that your using may is also important but it doesn't affect us now :D.
